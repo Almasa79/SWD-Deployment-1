@@ -1,0 +1,38 @@
+name: Update YouTube Video
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight (UTC)
+
+jobs:
+  update_video:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Get latest YouTube video URL
+      id: get_video_url
+      run: |
+        # You can use any script or command here to fetch the latest video URL
+        # For example, using a script or command to retrieve the video URL from YouTube API.
+        # Replace 'YOUR_YOUTUBE_API_KEY' with your actual YouTube API key and 'YOUR_CHANNEL_ID' with your YouTube channel ID.
+        video_url=$(curl -s "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=YOUR_CHANNEL_ID&type=video&eventType=live&key=YOUR_YOUTUBE_API_KEY" | jq -r '.items[0].snippet.thumbnails.default.url')
+        echo "Video URL: $video_url"
+        echo "::set-output name=video_url::$video_url"
+
+    - name: Update video URL in the repository
+      run: |
+        # Replace 'YOUR_VIDEO_FILE' with the path to the file in your repository where you want to store the video URL.
+        video_url="${{ steps.get_video_url.outputs.video_url }}"
+        echo "Latest video URL: $video_url" > YOUR_VIDEO_FILE
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "Update YouTube video URL"
+        git push
+       
